@@ -30,6 +30,7 @@ void check_arp_reply(pcap_t* handle, pcap_pkthdr* header, uint32_t ip, const u_c
         arp_packet = (arp_frame *)rep;
         if((arp_packet->arp.sender_ip == ip) && (ntohs(arp_packet->arp.opcode) == 2)){
             memcpy(mac, arp_packet->arp.sender_mac, 6);
+            printf("%02X:%02X:%02X:%02X:%02X:%02X\n",mac[0],mac[1],mac[2],mac[3],mac[4],mac[5]);
             break;
         }
     }
@@ -53,6 +54,36 @@ void find_mac(pcap_t* handle, pcap_pkthdr *header, const u_char * rep,
     }printf("[+] Success to find target's MAC\n");
 
     // check correct arp reply
-    check_arp_reply(handle, header, target_ip, rep, target_mac);
-        
+    check_arp_reply(handle, header, target_ip, rep, target_mac);       
+}
+
+void scanning_ap(uint8_t * sender_mac, uint32_t sender_ip, uint8_t * target_mac, uint32_t target_ip, 
+                uint32_t subnet_mask, char * ineterface_name){
+    char errbuf[PCAP_ERRBUF_SIZE];
+    pcap_t* handle = pcap_open_live(ineterface_name, BUFSIZ, 1, 1000, errbuf);
+    struct pcap_pkthdr* header;
+    const u_char *rep;
+    unsigned char data[50];
+    arp_frame * arp_pkt = (arp_frame *)malloc(sizeof(arp_frame));
+
+    for(int i = 0; i < 256; i++){
+        memset(data, 0, sizeof(data));
+        subnet_mask = subnet_mask + 0b1;
+        uint32_t tmp_target_ip = target_ip | ntohl(subnet_mask);
+        make_arp_packet(target_mac, sender_mac, 1, sender_ip, tmp_target_ip, arp_pkt);
+        memcpy(data, arp_pkt, sizeof(arp_frame));
+
+        // send arp req to find taregt mac
+        if(pcap_sendpacket(handle, data ,sizeof(data))!=0){
+            printf("[-] Error in find target's MAC\n");
+            pcap_close(handle);
+            exit(0);
+        }printf("[+] Success to find target's MAC\n");
+        sleep(1);
+
+        // check correct arp reply
+        //check_arp_reply(handle, header, target_ip, rep, target_mac); 
+
+    }
+    
 }

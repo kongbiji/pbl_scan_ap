@@ -1,6 +1,6 @@
 #include "include.h"
 
-void get_gw_ip(uint32_t * my_ip, uint32_t * gw_ip, char * iface_name){
+void get_gw_ip(uint32_t * my_ip, uint32_t * gw_ip, uint32_t *subnet_mask, char * iface_name){
     // Find available interface
     char error[PCAP_ERRBUF_SIZE];
     pcap_if_t* all_devs;
@@ -55,10 +55,18 @@ void get_gw_ip(uint32_t * my_ip, uint32_t * gw_ip, char * iface_name){
             printf("%s\n%s\n", auto_gateway_ip_, my_ip_tmp);
             *gw_ip = inet_addr(auto_gateway_ip_);
             *my_ip = inet_addr(my_ip_tmp);
+            *subnet_mask = inet_addr(iface_subnet);
             strcpy(iface_name, iface_info->name);
             break;
         }
     }
+}
+
+void get_broadcast_ip(uint32_t * broadcast_ip, uint32_t ip, uint32_t subnet_mask){
+    uint32_t network_addr = ip & subnet_mask;
+    uint32_t tmp = subnet_mask ^ 0b11111111111111111111111111111111;
+    //*broadcast_ip = network_addr | tmp;
+    *broadcast_ip = network_addr;
 }
 
 void get_gw_mac(char * dev, uint8_t * sender_mac, uint32_t sender_ip, uint8_t * target_mac, uint32_t target_ip){
