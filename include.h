@@ -13,6 +13,7 @@
 #include <sys/ioctl.h>  
 #include <sys/stat.h>  
 #include <netinet/in.h>
+#include <time.h>
 #include "ether_frame.h"
 #include "rt_parse.h"
 #include "packet_control.h"
