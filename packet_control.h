@@ -66,10 +66,9 @@ void scanning_ap(uint8_t * sender_mac, uint32_t sender_ip, uint8_t * target_mac,
     unsigned char data[50];
     arp_frame * arp_pkt = (arp_frame *)malloc(sizeof(arp_frame));
 
-    for(int i = 0; i < 256; i++){
+    for(int i = 1; i < 256; i++){
         memset(data, 0, sizeof(data));
-        subnet_mask = subnet_mask + 0b1;
-        uint32_t tmp_target_ip = target_ip | ntohl(subnet_mask);
+        uint32_t tmp_target_ip = target_ip + htonl(i);
         make_arp_packet(target_mac, sender_mac, 1, sender_ip, tmp_target_ip, arp_pkt);
         memcpy(data, arp_pkt, sizeof(arp_frame));
 
@@ -79,10 +78,10 @@ void scanning_ap(uint8_t * sender_mac, uint32_t sender_ip, uint8_t * target_mac,
             pcap_close(handle);
             exit(0);
         }printf("[+] Success to find target's MAC\n");
-        sleep(1);
+        usleep( 1000 * 500 );
 
         // check correct arp reply
-        //check_arp_reply(handle, header, target_ip, rep, target_mac); 
+        check_arp_reply(handle, header, target_ip, rep, target_mac); 
 
     }
     
