@@ -5,8 +5,7 @@ TARGET=scan_iface
 OBJS=main.o
 
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $(OBJS) -lpcap
-	rm $(OBJS)
+	$(CXX) -o $@ $(OBJS) -lpcap -lpthread
 
 main.o: include.h main.cpp
 

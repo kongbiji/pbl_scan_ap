@@ -50,9 +50,8 @@ void get_gw_ip(uint32_t * my_ip, uint32_t * gw_ip, uint32_t *subnet_mask, char *
         all_devs = all_devs->next;
         sprintf(my_ip_tmp, "%d.%d.%d.%d", (iface_info->ip)&0xFF, (iface_info->ip>>8)&0xFF, (iface_info->ip>>16)&0xFF, (iface_info->ip>>24)&0xFF);
         sprintf(iface_subnet, "%d.%d.%d.%d", (iface_info->subnetmask)&0xFF, (iface_info->subnetmask>>8)&0xFF, (iface_info->subnetmask>>16)&0xFF, (iface_info->subnetmask>>24)&0xFF);
-        printf("%s\n%s\n", auto_iface_name_, iface_info->name);
+
         if(strcmp(auto_iface_name_, iface_info->name) == 0){
-            printf("%s\n%s\n", auto_gateway_ip_, my_ip_tmp);
             *gw_ip = inet_addr(auto_gateway_ip_);
             *my_ip = inet_addr(my_ip_tmp);
             *subnet_mask = inet_addr(iface_subnet);
@@ -60,6 +59,33 @@ void get_gw_ip(uint32_t * my_ip, uint32_t * gw_ip, uint32_t *subnet_mask, char *
             break;
         }
     }
+}
+
+uint32_t get_subnet(char * dev)
+{
+    int sock;
+    struct ifreq ifr;
+    struct sockaddr_in *sin;
+
+    sock = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (sock < 0) {
+        return 0;
+    }
+
+
+    strcpy(ifr.ifr_name, dev);
+    if (ioctl(sock, SIOCGIFNETMASK, &ifr)< 0)
+    {
+        close(sock);
+        return 0;
+    }
+
+    sin = (struct sockaddr_in*)&ifr.ifr_addr;
+    uint32_t subnet_mask = sin->sin_addr.s_addr;
+    close(sock);
+
+    return subnet_mask;
 }
 
 void get_broadcast_ip(uint32_t * broadcast_ip, uint32_t ip, uint32_t subnet_mask){
