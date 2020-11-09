@@ -2,6 +2,8 @@
 
 Scanning AP using ARP request
 
+The program must be run with root privileges!
+
 # Environment
 
 Linux, Raspberry Pi
@@ -11,5 +13,5 @@ Linux, Raspberry Pi
 ```
 git clone https://github.com/kongbiji/scan_iface
 make
-./scan_iface
+sudo ./scan_iface
 ```
