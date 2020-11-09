@@ -37,13 +37,17 @@ void check_arp_reply(pcap_t* handle, pcap_pkthdr* header, uint32_t ip, const u_c
 }
 
 void find_mac(pcap_t* handle, pcap_pkthdr *header, const u_char * rep, 
-    uint8_t * sender_mac, uint32_t sender_ip, uint8_t * target_mac, uint32_t target_ip){
+     uint8_t * sender_mac, uint32_t sender_ip, uint8_t * target_mac, uint32_t target_ip){
+    
     unsigned char data[50];
     arp_frame * arp_pkt = (arp_frame *)malloc(sizeof(arp_frame));
     uint8_t broadcast[6];
+
     memcpy(broadcast,"\xFF\xFF\xFF\xFF\xFF\xFF",6);
     memset(data, 0, sizeof(data));
+
     make_arp_packet(broadcast, sender_mac, 1, sender_ip, target_ip, arp_pkt);
+
     memcpy(data, arp_pkt, sizeof(arp_frame));
 
     // send arp req to find taregt mac
@@ -54,7 +58,7 @@ void find_mac(pcap_t* handle, pcap_pkthdr *header, const u_char * rep,
     }
 
     // check correct arp reply
-    check_arp_reply(handle, header, target_ip, rep, target_mac);       
+    check_arp_reply(handle, header, target_ip, rep, target_mac);  
 }
 
 
@@ -71,7 +75,7 @@ void scan_pkt_check(char * iface_name, uint32_t my_ip, uint32_t gw_ip, uint8_t *
         char data[1024] = {0,};
         data[0] = '3';
         data[1] = '\t';
-        if(k == 6){
+        if(k == 5){
             break; // scanning end
         }
 
@@ -149,8 +153,10 @@ void scan_pkt_send(uint32_t subnet, char * iface_name, uint32_t my_ip, uint8_t *
         memset(arp_pkt, 0, sizeof(arp_frame));
         u_char pkt[sizeof(arp_frame)];
         memset(pkt, 0, sizeof(arp_frame));
+
         make_arp_packet(broad_mac, my_mac, 0x1,
-                                            my_ip, htonl(start_ip), arp_pkt);
+        my_ip, htonl(start_ip), arp_pkt); //
+
         memcpy(pkt, arp_pkt, sizeof(arp_frame));
 
         // 아이피 하나씩 차례대로 arp request 전송
